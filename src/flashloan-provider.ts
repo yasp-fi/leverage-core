@@ -14,7 +14,7 @@ export type FlashLoanAmount = {
 export type FlashLoanParams = {
   assets: FlashLoanAmount[];
   receiver: Hex;
-  payload: EncodedTransaction[];
+  payload: Hex;
 };
 
 export abstract class FlashLoanProvider {

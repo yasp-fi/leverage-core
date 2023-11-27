@@ -26,8 +26,6 @@ export class BalancerFlashLoanProvider extends FlashLoanProvider {
       parseUnits(item.amount, Asset.decimals(item.asset, this.chain))
     );
 
-    const innerPayload = "0x0";
-
     return {
       chain: this.chain,
       transactionType: "FLASH_LOAN",
@@ -36,7 +34,7 @@ export class BalancerFlashLoanProvider extends FlashLoanProvider {
       payload: encodeFunctionData({
         abi: BALANCER_VAULT_ABI,
         functionName: "flashLoan",
-        args: [params.receiver, tokens, amounts, innerPayload],
+        args: [params.receiver, tokens, amounts, params.payload],
       }),
       address: {
         fromAddress: params.receiver,

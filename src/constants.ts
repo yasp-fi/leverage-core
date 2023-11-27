@@ -1,7 +1,7 @@
 import { ChainNativeSymbols } from "@yasp/models";
 
 export const MAX_BPS = 10000;
-
+export const AAVE_REFERRAL_CODE = 0;
 
 export const chainToAavePoolMapper: Partial<
   Record<ChainNativeSymbols, `0x${string}`>

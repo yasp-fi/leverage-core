@@ -2,7 +2,7 @@ import { Asset, ChainNativeSymbols, EncodedTransaction } from "@yasp/models";
 import { FlashLoanParams, FlashLoanProvider } from "../flashloan-provider";
 import { Hex, encodeFunctionData, parseUnits } from "viem";
 import { AAVE_POOL_ABI } from "../abis";
-import { chainToAavePoolMapper } from "../constants";
+import { AAVE_REFERRAL_CODE, chainToAavePoolMapper } from "../constants";
 
 export class AaveFlashLoanProvider extends FlashLoanProvider {
   poolAddress: Hex;
@@ -28,8 +28,6 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
 
     const interestRates = new Array(params.assets.length).fill(BigInt(0));
 
-    const innerPayload = "0x0";
-
     return {
       chain: this.chain,
       transactionType: "FLASH_LOAN",
@@ -43,9 +41,9 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
           tokens,
           amounts,
           interestRates,
-          innerPayload,
+          params.payload,
           params.receiver,
-          0,
+          AAVE_REFERRAL_CODE,
         ],
       }),
       address: {
