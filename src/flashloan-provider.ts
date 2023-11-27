@@ -1,4 +1,9 @@
-import { MinimalAsset, TransactionPayload } from "@yasp/models";
+import {
+  ChainNativeSymbols,
+  EncodedTransaction,
+  MinimalAsset,
+  TransactionPayload,
+} from "@yasp/models";
 import { Hex } from "viem";
 
 export type FlashLoanAmount = {
@@ -9,9 +14,10 @@ export type FlashLoanAmount = {
 export type FlashLoanParams = {
   assets: FlashLoanAmount[];
   receiver: Hex;
-  payload: TransactionPayload;
+  payload: EncodedTransaction[];
 };
 
 export abstract class FlashLoanProvider {
-  abstract flashloan(params: FlashLoanParams): Promise<TransactionPayload>;
+  constructor(readonly chain: ChainNativeSymbols) {}
+  abstract flashloan(params: FlashLoanParams): Promise<EncodedTransaction>;
 }
