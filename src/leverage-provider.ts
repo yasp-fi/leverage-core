@@ -1,4 +1,4 @@
-import { EncodedTransaction, MinimalAsset } from "@yasp/models";
+import {ChainNativeSymbols, EncodedTransaction, MinimalAsset} from "@yasp/models";
 import { Hex, formatUnits, parseUnits } from "viem";
 import { MAX_BPS } from "./constants";
 import { FlashLoanProvider } from "./flashloan-provider";
@@ -6,6 +6,7 @@ import { SwapProvider } from "./swap-provider";
 
 export abstract class LeverageProvider {
   constructor(
+    public readonly chain: ChainNativeSymbols,
     readonly flashloan: FlashLoanProvider,
     readonly swapper: SwapProvider
   ) {}
@@ -27,7 +28,7 @@ export abstract class LeverageProvider {
     const loanedAmount = formatUnits(loanedWeiAmount, dept.decimals);
 
     return Promise.all([
-      this.swapper.swap(dept, collateral, loanedAmount, loanedAmount),
+      this.swapper.swap(this.chain, dept, collateral, loanedAmount, loanedAmount, walletAddress),
       this.setup(collateral, dept),
       this.addCollateral(collateral, leverageAmount, walletAddress),
       this.removeDept(dept, loanedAmount, walletAddress),
@@ -45,7 +46,7 @@ export abstract class LeverageProvider {
     return Promise.all([
       this.addDept(dept, deptAmount, walletAddress),
       this.removeCollateral(collateral, collateralAmount, walletAddress),
-      this.swapper.swap(collateral, dept, collateralAmount, deptAmount),
+      this.swapper.swap(this.chain, dept, collateral, deptAmount, collateralAmount, walletAddress),
     ]).then((data) => data.flat());
   }
 
