@@ -54,7 +54,8 @@ export abstract class LeverageProvider {
 
   abstract setup(
     collateral: MinimalAsset,
-    dept: MinimalAsset
+    dept: MinimalAsset,
+    walletAddress: Hex
   ): Promise<EncodedTransaction[]>;
 
   abstract addCollateral(

@@ -18,6 +18,6 @@ export type FlashLoanParams = {
 };
 
 export abstract class FlashLoanProvider {
-  constructor(readonly chain: ChainNativeSymbols) {}
+  constructor(public readonly chain: ChainNativeSymbols) {}
   abstract flashloan(params: FlashLoanParams): Promise<EncodedTransaction>;
 }

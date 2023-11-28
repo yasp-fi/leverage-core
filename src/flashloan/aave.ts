@@ -1,24 +1,22 @@
 import { Asset, ChainNativeSymbols, EncodedTransaction } from "@yasp/models";
+import { Hex, parseUnits } from "viem";
+import { AavePoolAddressesProvider, AaveV3Pool } from "@yasp/evm-lib";
+
 import { FlashLoanParams, FlashLoanProvider } from "../flashloan-provider";
-import { Hex, encodeFunctionData, parseUnits } from "viem";
-import { AAVE_POOL_ABI } from "../abis";
-import { AAVE_REFERRAL_CODE, chainToAavePoolMapper } from "../constants";
 
 export class AaveFlashLoanProvider extends FlashLoanProvider {
-  poolAddress: Hex;
-
+  poolAddressesProvider: AavePoolAddressesProvider;
   constructor(chain: ChainNativeSymbols) {
-    const pool = chainToAavePoolMapper[chain]!;
-
-    if (!pool) {
-      throw new Error(`Aave V3 is not supported on "${chain}" network`);
-    }
-
     super(chain);
-    this.poolAddress = pool;
+    this.poolAddressesProvider = new AavePoolAddressesProvider(this.chain);
   }
 
   async flashloan(params: FlashLoanParams): Promise<EncodedTransaction> {
+    const {
+      POOL,
+    } = await this.poolAddressesProvider.getContracts()
+    const poolContract = new AaveV3Pool(this.chain, POOL);
+
     const tokens = params.assets.map(
       (item) => Asset.onChainAddress(item.asset, this.chain) as Hex
     );
@@ -28,27 +26,29 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
 
     const interestRates = new Array(params.assets.length).fill(BigInt(0));
 
+    const {
+      encodedPayload: payload,
+    } = await poolContract.flashloanAllFormats({
+      params: {
+        receiverAddress: params.receiver,
+        assets: tokens,
+        modes: interestRates,
+        onBehalfOf: params.receiver,
+        params: params.payload,
+        amounts,
+      },
+      prepareTransaction: false,
+    })
+
     return {
       chain: this.chain,
       transactionType: "FLASH_LOAN",
       transactionLabel: "Flashloan on Aave",
       transactionValue: "0",
-      payload: encodeFunctionData({
-        abi: AAVE_POOL_ABI,
-        functionName: "flashLoan",
-        args: [
-          params.receiver,
-          tokens,
-          amounts,
-          interestRates,
-          params.payload,
-          params.receiver,
-          AAVE_REFERRAL_CODE,
-        ],
-      }),
+      payload,
       address: {
         fromAddress: params.receiver,
-        toAddress: this.poolAddress,
+        toAddress: poolContract.poolAddress,
       },
     };
   }

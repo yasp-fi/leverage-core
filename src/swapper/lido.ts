@@ -3,8 +3,13 @@ import {
   ForDEXQuoteParams,
   KyberSwapProvider,
 } from '@yasp/swap-providers'
+import { Hex } from "viem";
+
 import { SwapProvider } from "../swap-provider";
-import {Hex} from "viem";
+
+import {
+  _getKyberSwapQuoteResult,
+} from './utils/get-ks-quote'
 
 export class LidoSwapper extends SwapProvider {
   constructor(
@@ -14,7 +19,7 @@ export class LidoSwapper extends SwapProvider {
   }
 
 
-  async _getKyberSwapQuoteResult(
+  async _getQuote(
       chain: ChainNativeSymbols,
       assetIn: MinimalAsset,
       assetOut: MinimalAsset,
@@ -22,29 +27,14 @@ export class LidoSwapper extends SwapProvider {
       walletAddress: Hex,
       slippageBPS?: number
   ) {
-    const dexQuoteParams: ForDEXQuoteParams = {
-      fromAsset: {
-        decimals: assetIn.decimals,
-        symbol: assetIn.symbol,
-        isNative: assetIn.isBaseAsset,
-        onChainAddress: Asset.onChainAddress(assetIn, chain),
-        chainId: Chain.mapNativeSymbolToId(chain),
+    return _getKyberSwapQuoteResult.bind(this.kyberSwapSwapProvider)(
         chain,
-      },
-      fromAssetAmount: amountIn,
-      toAsset: {
-        decimals: assetOut.decimals,
-        symbol: assetOut.symbol,
-        isNative: assetOut.isBaseAsset,
-        onChainAddress: Asset.onChainAddress(assetOut, chain),
-        chainId: Chain.mapNativeSymbolToId(chain),
-        chain,
-      },
-      slippage: slippageBPS ?? null,
-      walletAddress,
-    }
-
-    return this.kyberSwapSwapProvider.forDEXQuote(chain, dexQuoteParams)
+        assetIn,
+        assetOut,
+        amountIn,
+        walletAddress,
+        slippageBPS,
+    )
   }
 
   async previewSwap(
@@ -55,7 +45,7 @@ export class LidoSwapper extends SwapProvider {
     walletAddress: Hex,
     slippageBPS?: number
   ): Promise<number> {
-    const quote = await this._getKyberSwapQuoteResult(
+    const quote = await this._getQuote(
       chain,
       assetIn,
       assetOut,
@@ -75,7 +65,7 @@ export class LidoSwapper extends SwapProvider {
     walletAddress: Hex,
     slippageBPS?: number
   ): Promise<EncodedTransaction[]> {
-    const quote = await this._getKyberSwapQuoteResult(
+    const quote = await this._getQuote(
         chain,
         assetIn,
         assetOut,
