@@ -2,8 +2,6 @@ import {ChainNativeSymbols, EncodedTransaction, MinimalAsset} from "@yasp/models
 import {Hex} from "viem";
 
 
-
-
 export abstract class SwapProvider {
 
 
@@ -15,7 +13,7 @@ export abstract class SwapProvider {
     walletAddress: Hex,
     slippageBPS?: number
   ): Promise<number>;
-  
+
   abstract swap(
     chain: ChainNativeSymbols,
     assetIn: MinimalAsset,

@@ -1,4 +1,4 @@
-import {ChainNativeSymbols, EncodedTransaction, MinimalAsset} from "@yasp/models";
+import { ChainNativeSymbols, EncodedTransaction, MinimalAsset } from "@yasp/models";
 import { Hex, formatUnits, parseUnits } from "viem";
 import { MAX_BPS } from "./constants";
 import { FlashLoanProvider } from "./flashloan-provider";
@@ -8,7 +8,7 @@ export abstract class LeverageProvider {
   constructor(
     public readonly chain: ChainNativeSymbols,
     readonly flashloan: FlashLoanProvider,
-    readonly swapper: SwapProvider
+    readonly swapper: SwapProvider,
   ) {}
 
   async leverage(
