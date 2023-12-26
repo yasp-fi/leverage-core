@@ -18,6 +18,7 @@
     "@yasp/models": "workspace:*",
     "@yasp/requests": "workspace:*",
     "@yasp/swap-providers": "workspace:*",
+    "@yasp/defi-router": "workspace:*",
     "abitype": "^0.9.8",
     "eslint-config-custom": "workspace:*",
     "lodash": "^4.17.21",

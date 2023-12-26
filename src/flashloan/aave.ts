@@ -3,6 +3,7 @@ import { Hex, parseUnits } from "viem";
 import { AavePoolAddressesProvider, AaveV3Pool } from "@yasp/evm-lib";
 
 import { FlashLoanParams, FlashLoanProvider } from "../flashloan-provider";
+import { setCallback } from "../utils";
 
 export class AaveFlashLoanProvider extends FlashLoanProvider {
   poolAddressesProvider: AavePoolAddressesProvider;
@@ -11,10 +12,16 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
     this.poolAddressesProvider = new AavePoolAddressesProvider(this.chain);
   }
 
-  async flashloan(params: FlashLoanParams): Promise<EncodedTransaction> {
-    const {
-      POOL,
-    } = await this.poolAddressesProvider.getContracts()
+  async flashloan(params: FlashLoanParams): Promise<EncodedTransaction[]> {
+    const txs = await Promise.all([
+      setCallback(params.receiver, 1, this.chain),
+      this.#flashloan(params),
+    ]);
+    return txs.flat();
+  }
+
+  async #flashloan(params: FlashLoanParams): Promise<EncodedTransaction> {
+    const { POOL } = await this.poolAddressesProvider.getContracts();
     const poolContract = new AaveV3Pool(this.chain, POOL);
 
     const tokens = params.assets.map(
@@ -26,9 +33,7 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
 
     const interestRates = new Array(params.assets.length).fill(BigInt(0));
 
-    const {
-      encodedPayload: payload,
-    } = await poolContract.flashloanAllFormats({
+    const { encodedPayload: payload } = await poolContract.flashloanAllFormats({
       params: {
         receiverAddress: params.receiver,
         assets: tokens,
@@ -38,7 +43,7 @@ export class AaveFlashLoanProvider extends FlashLoanProvider {
         amounts,
       },
       prepareTransaction: false,
-    })
+    });
 
     return {
       chain: this.chain,

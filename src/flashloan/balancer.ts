@@ -3,6 +3,7 @@ import { FlashLoanParams, FlashLoanProvider } from "../flashloan-provider";
 import { Hex, encodeFunctionData, parseUnits } from "viem";
 import { BALANCER_VAULT_ABI } from "../abis";
 import { chainToBalancerVaultMapper } from "../constants";
+import { setCallback } from "../utils";
 
 export class BalancerFlashLoanProvider extends FlashLoanProvider {
   poolAddress: Hex;
@@ -18,7 +19,15 @@ export class BalancerFlashLoanProvider extends FlashLoanProvider {
     this.poolAddress = pool;
   }
 
-  async flashloan(params: FlashLoanParams): Promise<EncodedTransaction> {
+  async flashloan(params: FlashLoanParams): Promise<EncodedTransaction[]> {
+    const txs = await Promise.all([
+      setCallback(params.receiver, 2, this.chain),
+      this.#flashloan(params),
+    ]);
+    return txs.flat();
+  }
+
+  async #flashloan(params: FlashLoanParams): Promise<EncodedTransaction> {
     const tokens = params.assets.map(
       (item) => Asset.onChainAddress(item.asset, this.chain) as Hex
     );

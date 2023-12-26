@@ -2,9 +2,8 @@ import {
   ChainNativeSymbols,
   EncodedTransaction,
   MinimalAsset,
-  TransactionPayload,
 } from "@yasp/models";
-import { Hex } from "viem";
+import { Hex, encodeFunctionData, parseAbi } from "viem";
 
 export type FlashLoanAmount = {
   asset: MinimalAsset;
@@ -19,5 +18,5 @@ export type FlashLoanParams = {
 
 export abstract class FlashLoanProvider {
   constructor(public readonly chain: ChainNativeSymbols) {}
-  abstract flashloan(params: FlashLoanParams): Promise<EncodedTransaction>;
+  abstract flashloan(params: FlashLoanParams): Promise<EncodedTransaction[]>;  
 }
